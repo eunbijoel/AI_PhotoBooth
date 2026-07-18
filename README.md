@@ -8,6 +8,9 @@
 > **개인정보:** 사진·영상·세션 데이터는 **서버로 업로드되지 않습니다.**  
 > 처리와 임시 저장은 전부 **사용자 브라우저(클라이언트)** 에서만 이뤄집니다.
 
+<img width="2048" height="1131" alt="image" src="https://github.com/user-attachments/assets/34c06ab9-b1af-42c7-ba44-38a1ce2e0400" />
+<img width="854" height="463" alt="스크린샷 2026-07-17 오후 11 30 55" src="https://github.com/user-attachments/assets/2e00c829-a72b-4388-9a08-68f66f11802e" />
+
 ---
 
 ## 실행
