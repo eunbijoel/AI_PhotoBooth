@@ -8,6 +8,8 @@ import { playCountdownBeep, playShutter, playComplete } from "@/lib/sounds";
 import { AUTO_COUNTDOWN_SECONDS, COUNTDOWN_SECONDS, TOTAL_SHOTS } from "@/types";
 import { getCaptureAspect } from "@/lib/constants";
 import { sleep } from "@/lib/utils";
+import { useOverlayStore } from "@/store/overlay-store";
+import { measureOverlayPreview } from "@/lib/overlay-engine";
 
 /**
  * Orchestrates countdown → flash → capture for the 8-shot candidate pool.
@@ -36,11 +38,24 @@ export function useCaptureWorkflow(
   const captureOne = useCallback(async () => {
     const video = videoRef.current;
     if (!video) return false;
+    const overlayState = useOverlayStore.getState();
+    const previewSnapshot = measureOverlayPreview(overlayState);
+    const fallbackAspect = getCaptureAspect(frameLayout);
+    const outputSize = getOutputSize(
+      previewSnapshot?.frameAspectRatio ?? fallbackAspect.ratio,
+    );
+
     setPhase("flash");
     await playShutter(muted);
     await sleep(120);
-    const aspect = getCaptureAspect(frameLayout);
-    const dataUrl = captureFromVideo(video, filter, true, aspect.width, aspect.height);
+    const dataUrl = await captureFromVideo(
+      video,
+      filter,
+      true,
+      outputSize.width,
+      outputSize.height,
+      previewSnapshot?.overlay ?? overlayState,
+    );
     addPhoto(dataUrl, filter);
     setPhase("review");
     await sleep(450);
@@ -122,5 +137,19 @@ export function useCaptureWorkflow(
     startSession,
     captureOne,
     busy: busy.current,
+  };
+}
+
+function getOutputSize(ratio: number): { width: number; height: number } {
+  const longEdge = 960;
+  if (ratio >= 1) {
+    return {
+      width: longEdge,
+      height: Math.round(longEdge / ratio),
+    };
+  }
+  return {
+    width: Math.round(longEdge * ratio),
+    height: longEdge,
   };
 }

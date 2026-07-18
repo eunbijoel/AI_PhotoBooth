@@ -8,6 +8,7 @@ import { useBoothStore } from "@/store/booth-store";
 import { getCaptureAspect, getFilter, getFilterCss } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import type { WebcamController } from "@/hooks/use-webcam";
+import { OverlayCanvas } from "@/components/overlay/OverlayCanvas";
 
 interface CameraStageProps {
   webcam: WebcamController;
@@ -80,14 +81,16 @@ export function CameraStage({ webcam, faces, className }: CameraStageProps) {
         </div>
       )}
 
+      <OverlayCanvas />
+
       {webcam.active && !webcam.ready && !webcam.error && (
-        <div className="absolute inset-0 flex items-center justify-center bg-zinc-950/80 text-sm text-white/70">
+        <div className="absolute inset-0 z-20 flex items-center justify-center bg-zinc-950/80 text-sm text-white/70">
           카메라 준비 중…
         </div>
       )}
 
       {poseGuide && phase !== "flash" && (
-        <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+        <div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center">
           <div className="h-[68%] w-[58%] rounded-[40%] border border-dashed border-white/35" />
         </div>
       )}
@@ -95,7 +98,7 @@ export function CameraStage({ webcam, faces, className }: CameraStageProps) {
       {faces.map((face, i) => (
         <div
           key={i}
-          className="pointer-events-none absolute rounded-xl border-2 border-white/80 shadow-[0_0_20px_rgba(255,255,255,0.25)]"
+          className="pointer-events-none absolute z-20 rounded-xl border-2 border-white/80 shadow-[0_0_20px_rgba(255,255,255,0.25)]"
           style={{
             left: `${100 - face.x - face.width}%`,
             top: `${face.y}%`,
@@ -105,7 +108,7 @@ export function CameraStage({ webcam, faces, className }: CameraStageProps) {
         />
       ))}
 
-      <div className="absolute left-4 top-4 rounded-full bg-black/45 px-3 py-1.5 text-xs font-medium text-white backdrop-blur-md">
+      <div className="pointer-events-none absolute left-4 top-4 z-20 rounded-full bg-black/45 px-3 py-1.5 text-xs font-medium text-white backdrop-blur-md">
         {retakePhotoId
           ? "다시 찍기"
           : `Photo ${Math.min(currentShot + (phase === "countdown" || phase === "flash" ? 1 : 0), TOTAL_SHOTS)} / ${TOTAL_SHOTS}`}
@@ -119,7 +122,10 @@ export function CameraStage({ webcam, faces, className }: CameraStageProps) {
 function ProgressDots() {
   const photos = useBoothStore((s) => s.photos);
   return (
-    <div className="absolute bottom-4 left-1/2 flex -translate-x-1/2 gap-1.5" aria-label="촬영 진행도">
+    <div
+      className="pointer-events-none absolute bottom-4 left-1/2 z-20 flex -translate-x-1/2 gap-1.5"
+      aria-label="촬영 진행도"
+    >
       {Array.from({ length: TOTAL_SHOTS }).map((_, i) => (
         <motion.span
           key={i}

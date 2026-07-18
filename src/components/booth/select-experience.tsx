@@ -117,7 +117,7 @@ export function SelectExperience() {
                       <img
                         src={photo.dataUrl}
                         alt={`${index + 1}번 후보`}
-                        className="aspect-[4/3] w-full object-cover"
+                        className="block h-auto w-full"
                       />
                     </button>
 

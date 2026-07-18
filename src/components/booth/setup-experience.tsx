@@ -8,6 +8,7 @@ import { BoothBackdrop, TopBar } from "@/components/shared/chrome";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useBoothStore } from "@/store/booth-store";
+import { OverlayPicker } from "@/components/overlay/OverlayPicker";
 
 export function SetupExperience() {
   const router = useRouter();
@@ -40,6 +41,7 @@ export function SetupExperience() {
               <FrameLayoutGallery />
               <CaptureModePicker />
               <FilterPicker />
+              <OverlayPicker />
             </CardContent>
           </Card>
 

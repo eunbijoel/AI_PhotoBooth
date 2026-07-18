@@ -2,6 +2,8 @@ import type { CapturedPhoto, FilterId, FrameId, FrameLayoutId } from "@/types";
 import { CAPTURE_HEIGHT, CAPTURE_WIDTH } from "@/types";
 import { getFilter, getFilterCss, getFrame, getFrameLayout } from "@/lib/constants";
 import { formatStripDate } from "@/lib/utils";
+import { drawOverlayToCanvas, loadOverlayImage } from "@/lib/overlay-engine";
+import type { OverlayState } from "@/types/overlay";
 
 function loadImage(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
@@ -184,7 +186,8 @@ export function captureFromVideo(
   mirrored = true,
   captureWidth = CAPTURE_WIDTH,
   captureHeight = CAPTURE_HEIGHT,
-): string {
+  overlay?: OverlayState,
+): Promise<string> {
   const canvas = document.createElement("canvas");
   canvas.width = captureWidth;
   canvas.height = captureHeight;
@@ -227,7 +230,17 @@ export function captureFromVideo(
     drawHeartOverlay(ctx, captureWidth, captureHeight);
   }
 
-  return canvas.toDataURL("image/jpeg", 0.92);
+  return compositeAndEncode();
+
+  async function compositeAndEncode(): Promise<string> {
+    if (overlay?.visible && overlay.imageSrc) {
+      // Never silently save a frame without the overlay the user saw.
+      const overlayImage = await loadOverlayImage(overlay.imageSrc);
+      drawOverlayToCanvas(ctx!, overlayImage, overlay, captureWidth, captureHeight);
+    }
+
+    return canvas.toDataURL("image/jpeg", 0.92);
+  }
 }
 
 /** Convert a PNG data URL to JPEG. */

@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { TOTAL_SHOTS } from "@/types";
 import { getFrameLayout } from "@/lib/constants";
+import { OverlayToolbar } from "@/components/overlay/OverlayToolbar";
 
 export function ShootExperience() {
   const router = useRouter();
@@ -30,6 +31,7 @@ export function ShootExperience() {
     isSessionFull,
   } = useBoothStore();
   const [busy, setBusy] = useState(false);
+  const [captureError, setCaptureError] = useState<string | null>(null);
   const autoStarted = useRef(false);
   const layout = getFrameLayout(frameLayout);
 
@@ -37,6 +39,7 @@ export function ShootExperience() {
     if (busy) return;
     const wasRetake = Boolean(useBoothStore.getState().retakePhotoId);
     setBusy(true);
+    setCaptureError(null);
     try {
       await startSession();
       const state = useBoothStore.getState();
@@ -49,6 +52,8 @@ export function ShootExperience() {
       if (state.isSessionFull()) {
         router.push("/select");
       }
+    } catch {
+      setCaptureError("오버레이를 포함한 사진 저장에 실패했습니다. PNG를 다시 선택해주세요.");
     } finally {
       setBusy(false);
     }
@@ -143,6 +148,14 @@ export function ShootExperience() {
             </Card>
           )}
 
+          {captureError && (
+            <Card className="mt-4 border-red-300/25 bg-red-500/10">
+              <CardContent className="p-4 text-sm text-red-100" role="alert">
+                {captureError}
+              </CardContent>
+            </Card>
+          )}
+
           <div className="mt-6 flex flex-wrap gap-3">
             {(captureMode === "manual3" || retakePhotoId) && (
               <Button size="lg" disabled={shootDisabled} onClick={() => void handleShoot()}>
@@ -165,6 +178,7 @@ export function ShootExperience() {
         </section>
 
         <aside className="space-y-4">
+          <OverlayToolbar />
           <Card>
             <CardContent className="space-y-5 p-5">
               <FilterPicker disabled={phase === "countdown" || phase === "flash"} />
