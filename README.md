@@ -24,17 +24,6 @@ http://localhost:3000
 
 카메라 권한은 `localhost` 또는 HTTPS에서만 허용됩니다.
 
-### 오버레이 Debug Mode
-
-`.env.local`에 아래 값을 추가하고 개발 서버를 다시 시작합니다.
-
-```bash
-NEXT_PUBLIC_OVERLAY_DEBUG=true
-```
-
-촬영 화면과 캡처 결과에 오버레이 중심점, 경계 상자, 정규화 좌표와 Canvas 좌표가 표시되며
-개발자 콘솔에 `[overlay:canvas]` 로그가 출력됩니다. 라이브 미리보기와 캡처는 같은 Canvas
-렌더러를 사용합니다.
 
 ---
 
