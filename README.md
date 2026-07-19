@@ -79,5 +79,3 @@ http://localhost:3000
 | ZIP 다운로드 | ✅ 지원 | ✅ 지원 |
 
 권장: 최신 Chrome 또는 Safari.
----
-Interactive 기능 tbc..
