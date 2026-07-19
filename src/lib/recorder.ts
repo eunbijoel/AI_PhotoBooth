@@ -4,7 +4,7 @@
  */
 
 export interface SessionRecorder {
-  start: () => void;
+  start: () => boolean;
   stop: () => Promise<Blob | null>;
   isRecording: () => boolean;
 }
@@ -32,21 +32,32 @@ export function createSessionRecorder(stream: MediaStream): SessionRecorder {
 
   return {
     start() {
-      if (!stream || recording) return;
+      if (!stream || recording || typeof MediaRecorder === "undefined") return false;
       const mimeType = pickMimeType();
       try {
         recorder = mimeType
           ? new MediaRecorder(stream, { mimeType, videoBitsPerSecond: 2_500_000 })
           : new MediaRecorder(stream);
       } catch {
-        recorder = new MediaRecorder(stream);
+        try {
+          recorder = new MediaRecorder(stream);
+        } catch {
+          recorder = null;
+          return false;
+        }
       }
       chunks = [];
       recorder.ondataavailable = (e) => {
         if (e.data.size > 0) chunks.push(e.data);
       };
-      recorder.start(250);
-      recording = true;
+      try {
+        recorder.start(250);
+        recording = true;
+      } catch {
+        recorder = null;
+        recording = false;
+      }
+      return recording;
     },
     stop() {
       return new Promise((resolve) => {
@@ -57,9 +68,20 @@ export function createSessionRecorder(stream: MediaStream): SessionRecorder {
         recorder.onstop = () => {
           recording = false;
           const type = recorder?.mimeType || "video/webm";
-          resolve(new Blob(chunks, { type }));
+          const blob = new Blob(chunks, { type });
+          resolve(blob.size > 0 ? blob : null);
         };
-        recorder.stop();
+        recorder.onerror = () => {
+          recording = false;
+          resolve(null);
+        };
+        try {
+          recorder.requestData();
+          recorder.stop();
+        } catch {
+          recording = false;
+          resolve(null);
+        }
       });
     },
     isRecording() {

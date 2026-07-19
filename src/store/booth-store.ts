@@ -50,6 +50,7 @@ interface BoothState {
   toggleMuted: () => void;
   setTheme: (theme: ThemeMode) => void;
   toggleTheme: () => void;
+  hydratePreferences: () => void;
   addPhoto: (dataUrl: string, filter: FilterId) => void;
   startRetake: (photoId: string) => boolean;
   clearRetake: () => void;
@@ -67,16 +68,6 @@ interface BoothState {
   canRetake: () => boolean;
 }
 
-const initialPersisted = () => {
-  if (typeof window === "undefined") {
-    return { muted: false, theme: "dark" as ThemeMode };
-  }
-  return {
-    muted: localStorage.getItem(MUTE_STORAGE_KEY) === "1",
-    theme: (localStorage.getItem(THEME_STORAGE_KEY) as ThemeMode) || "dark",
-  };
-};
-
 export const useBoothStore = create<BoothState>()((set, get) => ({
   phase: "idle",
   photos: [],
@@ -87,8 +78,10 @@ export const useBoothStore = create<BoothState>()((set, get) => ({
   frameLayout: "studio-grid",
   captureMode: "manual3",
   caption: "",
-  muted: initialPersisted().muted,
-  theme: initialPersisted().theme,
+  // SSR and the first browser render must be identical. Persisted values are
+  // loaded by ThemeBoot after hydration.
+  muted: false,
+  theme: "dark",
   stripDataUrl: null,
   videoBlob: null,
   autoSmile: false,
@@ -108,17 +101,29 @@ export const useBoothStore = create<BoothState>()((set, get) => ({
   setCaptureMode: (captureMode) => set({ captureMode }),
   setCaption: (caption) => set({ caption }),
   setMuted: (muted) => {
-    localStorage.setItem(MUTE_STORAGE_KEY, muted ? "1" : "0");
+    if (typeof window !== "undefined") {
+      localStorage.setItem(MUTE_STORAGE_KEY, muted ? "1" : "0");
+    }
     set({ muted });
   },
   toggleMuted: () => get().setMuted(!get().muted),
   setTheme: (theme) => {
-    localStorage.setItem(THEME_STORAGE_KEY, theme);
-    document.documentElement.classList.toggle("light", theme === "light");
-    document.documentElement.classList.toggle("dark", theme === "dark");
+    if (typeof document !== "undefined") {
+      localStorage.setItem(THEME_STORAGE_KEY, theme);
+      document.documentElement.classList.toggle("light", theme === "light");
+      document.documentElement.classList.toggle("dark", theme === "dark");
+    }
     set({ theme });
   },
   toggleTheme: () => get().setTheme(get().theme === "dark" ? "light" : "dark"),
+  hydratePreferences: () => {
+    if (typeof window === "undefined") return;
+    const storedTheme = localStorage.getItem(THEME_STORAGE_KEY);
+    set({
+      muted: localStorage.getItem(MUTE_STORAGE_KEY) === "1",
+      theme: storedTheme === "light" ? "light" : "dark",
+    });
+  },
 
   addPhoto: (dataUrl, filter) => {
     const retakePhotoId = get().retakePhotoId;

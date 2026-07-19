@@ -36,14 +36,15 @@ export function OverlayPicker() {
         accept="image/png,.png"
         className="sr-only"
         onChange={async (event) => {
-          const file = event.target.files?.[0];
+          const input = event.currentTarget;
+          const file = input.files?.[0];
           if (!file) return;
           setUploading(true);
           try {
             await uploadPng(file);
           } finally {
             setUploading(false);
-            event.currentTarget.value = "";
+            input.value = "";
           }
         }}
       />

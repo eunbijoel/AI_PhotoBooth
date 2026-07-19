@@ -85,7 +85,9 @@ export function useCaptureWorkflow(
         sessionState.lockOverlay(useOverlayStore.getState());
       }
 
-      if (stream) {
+      // Record the original 8-shot session once. A later retake must not
+      // overwrite the completed session video with a short replacement clip.
+      if (stream && !currentRetakeId && !sessionState.videoBlob) {
         if (!recorderRef.current?.isRecording()) {
           recorderRef.current = createSessionRecorder(stream);
           recorderRef.current.start();
@@ -112,7 +114,7 @@ export function useCaptureWorkflow(
 
       if (full && recorderRef.current?.isRecording()) {
         const blob = await recorderRef.current.stop();
-        setVideoBlob(blob);
+        if (blob) setVideoBlob(blob);
         recorderRef.current = null;
         await playComplete(muted);
       }
