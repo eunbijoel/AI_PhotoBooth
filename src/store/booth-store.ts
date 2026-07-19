@@ -13,6 +13,7 @@ import type {
 import { FINAL_PHOTO_COUNT, MAX_RETAKES, TOTAL_SHOTS } from "@/types";
 import { MUTE_STORAGE_KEY, THEME_STORAGE_KEY } from "@/lib/constants";
 import { uid } from "@/lib/utils";
+import type { OverlayState } from "@/types/overlay";
 
 interface BoothState {
   phase: BoothPhase;
@@ -35,6 +36,8 @@ interface BoothState {
   selectedPhotoIds: string[];
   retakePhotoId: string | null;
   retakesUsed: number;
+  /** Immutable overlay used by every capture in the current session. */
+  lockedOverlay: OverlayState | null;
 
   setPhase: (phase: BoothPhase) => void;
   setCountdown: (n: number) => void;
@@ -58,6 +61,7 @@ interface BoothState {
   setPoseGuide: (v: boolean) => void;
   setBackgroundBlur: (v: boolean) => void;
   setFlyingPhoto: (url: string | null) => void;
+  lockOverlay: (overlay: OverlayState) => void;
   isSessionFull: () => boolean;
   hasFinalSelection: () => boolean;
   canRetake: () => boolean;
@@ -94,6 +98,7 @@ export const useBoothStore = create<BoothState>()((set, get) => ({
   selectedPhotoIds: [],
   retakePhotoId: null,
   retakesUsed: 0,
+  lockedOverlay: null,
 
   setPhase: (phase) => set({ phase }),
   setCountdown: (countdown) => set({ countdown }),
@@ -185,6 +190,7 @@ export const useBoothStore = create<BoothState>()((set, get) => ({
       selectedPhotoIds: [],
       retakePhotoId: null,
       retakesUsed: 0,
+      lockedOverlay: null,
     }),
 
   setStrip: (stripDataUrl) => set({ stripDataUrl }),
@@ -193,6 +199,10 @@ export const useBoothStore = create<BoothState>()((set, get) => ({
   setPoseGuide: (poseGuide) => set({ poseGuide }),
   setBackgroundBlur: (backgroundBlur) => set({ backgroundBlur }),
   setFlyingPhoto: (flyingPhoto) => set({ flyingPhoto }),
+  lockOverlay: (overlay) => {
+    if (get().lockedOverlay) return;
+    set({ lockedOverlay: { ...overlay } });
+  },
   isSessionFull: () => get().photos.length >= TOTAL_SHOTS,
   hasFinalSelection: () => get().selectedPhotoIds.length === FINAL_PHOTO_COUNT,
   canRetake: () => get().retakesUsed < MAX_RETAKES,

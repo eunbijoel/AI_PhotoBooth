@@ -2,7 +2,11 @@ import type { CapturedPhoto, FilterId, FrameId, FrameLayoutId } from "@/types";
 import { CAPTURE_HEIGHT, CAPTURE_WIDTH } from "@/types";
 import { getFilter, getFilterCss, getFrame, getFrameLayout } from "@/lib/constants";
 import { formatStripDate } from "@/lib/utils";
-import { drawOverlayToCanvas, loadOverlayImage } from "@/lib/overlay-engine";
+import { loadOverlayImage } from "@/lib/overlay-engine";
+import {
+  calculateObjectCoverCrop,
+  renderOverlayToCanvas,
+} from "@/lib/overlay-renderer";
 import type { OverlayState } from "@/types/overlay";
 
 function loadImage(src: string): Promise<HTMLImageElement> {
@@ -133,8 +137,9 @@ export async function generatePhotoStrip(options: StripOptions): Promise<string>
     const photo = photos[index];
     if (!photo) continue;
     const img = await loadImage(photo.dataUrl);
-    // No white border — photo sits flush in the slot
-    drawImageCover(ctx, img, slot.x, slot.y, slot.width, slot.height);
+    warnIfAspectMismatch(img, slot.width, slot.height, frameLayoutId, index);
+    // Captures already use the slot ratio. Never crop them a second time.
+    ctx.drawImage(img, slot.x, slot.y, slot.width, slot.height);
   }
 
   ctx.fillStyle = frame.textColor;
@@ -150,30 +155,25 @@ export async function generatePhotoStrip(options: StripOptions): Promise<string>
   return canvas.toDataURL("image/png");
 }
 
-function drawImageCover(
-  ctx: CanvasRenderingContext2D,
+function warnIfAspectMismatch(
   img: HTMLImageElement,
-  x: number,
-  y: number,
   width: number,
   height: number,
-) {
-  const sourceRatio = img.width / img.height;
-  const targetRatio = width / height;
-  let sx = 0;
-  let sy = 0;
-  let sw = img.width;
-  let sh = img.height;
+  layoutId: FrameLayoutId,
+  photoIndex: number,
+): void {
+  if (process.env.NODE_ENV === "production") return;
+  const renderedHeight = width / (img.width / img.height);
+  const differenceInSlotPixels = Math.abs(renderedHeight - height);
+  if (differenceInSlotPixels <= 1) return;
 
-  if (sourceRatio > targetRatio) {
-    sw = img.height * targetRatio;
-    sx = (img.width - sw) / 2;
-  } else {
-    sh = img.width / targetRatio;
-    sy = (img.height - sh) / 2;
-  }
-
-  ctx.drawImage(img, sx, sy, sw, sh, x, y, width, height);
+  console.warn("[photo-strip] Capture/slot aspect mismatch; image was not cropped.", {
+    layoutId,
+    photoIndex,
+    captured: { width: img.width, height: img.height, ratio: img.width / img.height },
+    slot: { width, height, ratio: width / height },
+    differenceInSlotPixels,
+  });
 }
 
 /**
@@ -196,21 +196,7 @@ export function captureFromVideo(
 
   const vw = video.videoWidth || captureWidth;
   const vh = video.videoHeight || captureHeight;
-  const targetRatio = captureWidth / captureHeight;
-  const sourceRatio = vw / vh;
-
-  let sx = 0;
-  let sy = 0;
-  let sw = vw;
-  let sh = vh;
-
-  if (sourceRatio > targetRatio) {
-    sw = vh * targetRatio;
-    sx = (vw - sw) / 2;
-  } else {
-    sh = vw / targetRatio;
-    sy = (vh - sh) / 2;
-  }
+  const crop = calculateObjectCoverCrop(vw, vh, captureWidth, captureHeight);
 
   ctx.save();
   if (mirrored) {
@@ -223,7 +209,17 @@ export function captureFromVideo(
     ctx.filter = filterCss;
   }
 
-  ctx.drawImage(video, sx, sy, sw, sh, 0, 0, captureWidth, captureHeight);
+  ctx.drawImage(
+    video,
+    crop.sourceX,
+    crop.sourceY,
+    crop.sourceWidth,
+    crop.sourceHeight,
+    0,
+    0,
+    captureWidth,
+    captureHeight,
+  );
   ctx.restore();
 
   if (getFilter(filter).overlay === "hearts") {
@@ -236,7 +232,7 @@ export function captureFromVideo(
     if (overlay?.visible && overlay.imageSrc) {
       // Never silently save a frame without the overlay the user saw.
       const overlayImage = await loadOverlayImage(overlay.imageSrc);
-      drawOverlayToCanvas(ctx!, overlayImage, overlay, captureWidth, captureHeight);
+      renderOverlayToCanvas(ctx!, overlayImage, overlay, captureWidth, captureHeight);
     }
 
     return canvas.toDataURL("image/jpeg", 0.92);

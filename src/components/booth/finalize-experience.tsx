@@ -106,7 +106,7 @@ export function FinalizeExperience() {
                       <img
                         src={photo.dataUrl}
                         alt=""
-                        className="h-full w-full object-cover"
+                        className="h-full w-full"
                         style={{
                           filter: undefined,
                         }}

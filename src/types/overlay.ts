@@ -20,12 +20,6 @@ export interface OverlayTransform {
   opacity: number;
 }
 
-/** Exact visual geometry sampled from the live preview at shutter time. */
-export interface OverlayPreviewSnapshot {
-  overlay: OverlayState;
-  frameAspectRatio: number;
-}
-
 export const DEFAULT_OVERLAY_SRC = "/examples/puppy.png";
 
 export const DEFAULT_OVERLAY_TRANSFORM: OverlayTransform = {

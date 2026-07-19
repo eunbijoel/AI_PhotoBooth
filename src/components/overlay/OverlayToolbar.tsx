@@ -12,8 +12,10 @@ import { useOverlay } from "@/hooks/useOverlay";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
+import { useBoothStore } from "@/store/booth-store";
 
 export function OverlayToolbar() {
+  const locked = useBoothStore((state) => Boolean(state.lockedOverlay));
   const {
     imageSrc,
     visible,
@@ -39,13 +41,15 @@ export function OverlayToolbar() {
           <p id="overlay-toolbar-title" className="text-sm font-semibold text-white">
             PNG Overlay
           </p>
-          <p className="mt-1 text-[11px] text-white/45">드래그해 위치를 조정하세요.</p>
+          <p className="mt-1 text-[11px] text-white/45">
+            {locked ? "촬영이 시작되어 이 위치로 고정됐습니다." : "드래그해 위치를 조정하세요."}
+          </p>
         </div>
         <Button
           type="button"
           variant="ghost"
           size="icon"
-          disabled={!imageSrc}
+          disabled={locked || !imageSrc}
           onClick={toggleVisibility}
           aria-label={visible ? "오버레이 숨기기" : "오버레이 보이기"}
           aria-pressed={visible}
@@ -59,6 +63,7 @@ export function OverlayToolbar() {
         type="file"
         accept="image/png,.png"
         className="sr-only"
+        disabled={locked}
         onChange={(event) => {
           const file = event.target.files?.[0];
           if (file) uploadPng(file);
@@ -71,12 +76,19 @@ export function OverlayToolbar() {
           type="button"
           size="sm"
           variant="secondary"
+          disabled={locked}
           onClick={() => inputRef.current?.click()}
         >
           <ImagePlus className="h-4 w-4" />
           Upload
         </Button>
-        <Button type="button" size="sm" variant="outline" disabled={!imageSrc} onClick={reset}>
+        <Button
+          type="button"
+          size="sm"
+          variant="outline"
+          disabled={locked || !imageSrc}
+          onClick={reset}
+        >
           <RotateCcw className="h-4 w-4" />
           Reset
         </Button>
@@ -84,7 +96,7 @@ export function OverlayToolbar() {
           type="button"
           size="sm"
           variant="ghost"
-          disabled={!imageSrc}
+          disabled={locked || !imageSrc}
           onClick={deleteOverlay}
         >
           <Trash2 className="h-4 w-4" />
@@ -105,7 +117,7 @@ export function OverlayToolbar() {
             max={1}
             step={0.01}
             value={opacity}
-            disabled={!imageSrc}
+            disabled={locked || !imageSrc}
             onChange={(event) => updateTransform({ opacity: Number(event.target.value) })}
             aria-label="오버레이 투명도"
           />
@@ -117,7 +129,7 @@ export function OverlayToolbar() {
             max={1.2}
             step={0.01}
             value={scale}
-            disabled={!imageSrc}
+            disabled={locked || !imageSrc}
             onChange={(event) => updateTransform({ scale: Number(event.target.value) })}
             aria-label="오버레이 크기"
           />
@@ -129,7 +141,7 @@ export function OverlayToolbar() {
             max={180}
             step={1}
             value={rotation}
-            disabled={!imageSrc}
+            disabled={locked || !imageSrc}
             onChange={(event) => updateTransform({ rotation: Number(event.target.value) })}
             aria-label="오버레이 회전"
           />
