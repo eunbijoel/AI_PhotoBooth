@@ -29,10 +29,7 @@ interface BoothState {
   theme: ThemeMode;
   stripDataUrl: string | null;
   videoBlob: Blob | null;
-  autoSmile: boolean;
   poseGuide: boolean;
-  backgroundBlur: boolean;
-  flyingPhoto: string | null;
   selectedPhotoIds: string[];
   retakePhotoId: string | null;
   retakesUsed: number;
@@ -53,15 +50,10 @@ interface BoothState {
   hydratePreferences: () => void;
   addPhoto: (dataUrl: string, filter: FilterId) => void;
   startRetake: (photoId: string) => boolean;
-  clearRetake: () => void;
   togglePhotoSelected: (photoId: string) => void;
   resetSession: () => void;
   setStrip: (dataUrl: string | null) => void;
   setVideoBlob: (blob: Blob | null) => void;
-  setAutoSmile: (v: boolean) => void;
-  setPoseGuide: (v: boolean) => void;
-  setBackgroundBlur: (v: boolean) => void;
-  setFlyingPhoto: (url: string | null) => void;
   lockOverlay: (overlay: OverlayState) => void;
   isSessionFull: () => boolean;
   hasFinalSelection: () => boolean;
@@ -84,10 +76,7 @@ export const useBoothStore = create<BoothState>()((set, get) => ({
   theme: "dark",
   stripDataUrl: null,
   videoBlob: null,
-  autoSmile: false,
   poseGuide: true,
-  backgroundBlur: false,
-  flyingPhoto: null,
   selectedPhotoIds: [],
   retakePhotoId: null,
   retakesUsed: 0,
@@ -152,7 +141,6 @@ export const useBoothStore = create<BoothState>()((set, get) => ({
     set({
       photos,
       currentShot: photos.length,
-      flyingPhoto: dataUrl,
       selectedPhotoIds,
       retakePhotoId: null,
       retakesUsed,
@@ -169,8 +157,6 @@ export const useBoothStore = create<BoothState>()((set, get) => ({
     });
     return true;
   },
-
-  clearRetake: () => set({ retakePhotoId: null }),
 
   togglePhotoSelected: (photoId) => {
     const selected = get().selectedPhotoIds;
@@ -191,7 +177,6 @@ export const useBoothStore = create<BoothState>()((set, get) => ({
       caption: "",
       stripDataUrl: null,
       videoBlob: null,
-      flyingPhoto: null,
       selectedPhotoIds: [],
       retakePhotoId: null,
       retakesUsed: 0,
@@ -200,10 +185,6 @@ export const useBoothStore = create<BoothState>()((set, get) => ({
 
   setStrip: (stripDataUrl) => set({ stripDataUrl }),
   setVideoBlob: (videoBlob) => set({ videoBlob }),
-  setAutoSmile: (autoSmile) => set({ autoSmile }),
-  setPoseGuide: (poseGuide) => set({ poseGuide }),
-  setBackgroundBlur: (backgroundBlur) => set({ backgroundBlur }),
-  setFlyingPhoto: (flyingPhoto) => set({ flyingPhoto }),
   lockOverlay: (overlay) => {
     if (get().lockedOverlay) return;
     set({ lockedOverlay: { ...overlay } });

@@ -22,7 +22,6 @@ export function useCaptureWorkflow(
   const recorderRef = useRef<SessionRecorder | null>(null);
 
   const {
-    phase,
     captureMode,
     filter,
     frameLayout,
@@ -136,9 +135,6 @@ export function useCaptureWorkflow(
   ]);
 
   return {
-    phase,
     startSession,
-    captureOne,
-    busy: busy.current,
   };
 }

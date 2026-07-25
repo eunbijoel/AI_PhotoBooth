@@ -4,9 +4,7 @@ export type BoothPhase =
   | "idle"
   | "countdown"
   | "flash"
-  | "capturing"
   | "review"
-  | "decorating"
   | "complete";
 
 export type FilterId =

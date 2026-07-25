@@ -103,14 +103,7 @@ export function FinalizeExperience() {
                   >
                     {photo ? (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={photo.dataUrl}
-                        alt=""
-                        className="h-full w-full"
-                        style={{
-                          filter: undefined,
-                        }}
-                      />
+                      <img src={photo.dataUrl} alt="" className="h-full w-full" />
                     ) : (
                       <div className="h-full w-full bg-black/20" />
                     )}

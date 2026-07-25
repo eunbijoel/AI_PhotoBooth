@@ -1,6 +1,5 @@
 import JSZip from "jszip";
 import QRCode from "qrcode";
-import { saveAs } from "file-saver";
 import type { CapturedPhoto } from "@/types";
 import { dataUrlToBlob, downloadBlob } from "@/lib/utils";
 import { pngToJpeg } from "@/lib/strip";
@@ -52,7 +51,7 @@ export async function downloadZip(payload: ZipPayload, name = "my-ai-photo-booth
   }
 
   const content = await zip.generateAsync({ type: "blob" });
-  saveAs(content, name);
+  downloadBlob(content, name);
 }
 
 /** Build a ZIP containing every candidate photo from the select step. */
@@ -71,7 +70,7 @@ export async function downloadAllPhotosZip(
   });
 
   const content = await zip.generateAsync({ type: "blob" });
-  saveAs(content, name);
+  downloadBlob(content, name);
 }
 
 /** Generate a QR code data URL for sharing session metadata. */

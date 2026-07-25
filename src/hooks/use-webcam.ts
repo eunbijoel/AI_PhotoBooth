@@ -9,11 +9,9 @@ export interface WebcamController {
   stream: MediaStream | null;
   ready: boolean;
   error: string | null;
-  permission: "prompt" | "granted" | "denied" | "unknown";
   active: boolean;
   mirrored: boolean;
   start: () => void;
-  stop: () => void;
   handleUserMedia: (stream: MediaStream) => void;
   handleUserMediaError: (error: string | DOMException) => void;
 }
@@ -28,18 +26,7 @@ export function useWebcam(mirrored = true): WebcamController {
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [ready, setReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [permission, setPermission] = useState<"prompt" | "granted" | "denied" | "unknown">(
-    "unknown",
-  );
   const [active, setActive] = useState(false);
-
-  const stop = useCallback(() => {
-    const media = webcamRef.current?.stream ?? stream;
-    media?.getTracks().forEach((t) => t.stop());
-    setStream(null);
-    setReady(false);
-    setActive(false);
-  }, [stream]);
 
   const start = useCallback(() => {
     setError(null);
@@ -47,14 +34,12 @@ export function useWebcam(mirrored = true): WebcamController {
   }, []);
 
   const handleUserMedia = useCallback((media: MediaStream) => {
-    setPermission("granted");
     setStream(media);
     setReady(true);
     videoRef.current = webcamRef.current?.video ?? null;
   }, []);
 
   const handleUserMediaError = useCallback((err: string | DOMException) => {
-    setPermission("denied");
     setReady(false);
     setError(typeof err === "string" ? err : err.message || "카메라 권한이 필요합니다.");
   }, []);
@@ -65,9 +50,12 @@ export function useWebcam(mirrored = true): WebcamController {
     }
   }, [ready, stream]);
 
-  useEffect(() => () => {
-    webcamRef.current?.stream?.getTracks().forEach((t) => t.stop());
-  }, []);
+  useEffect(
+    () => () => {
+      webcamRef.current?.stream?.getTracks().forEach((t) => t.stop());
+    },
+    [],
+  );
 
   return {
     webcamRef,
@@ -75,11 +63,9 @@ export function useWebcam(mirrored = true): WebcamController {
     stream,
     ready: ready && active,
     error,
-    permission,
     active,
     mirrored,
     start,
-    stop,
     handleUserMedia,
     handleUserMediaError,
   };

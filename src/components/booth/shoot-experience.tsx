@@ -27,7 +27,6 @@ export function ShootExperience() {
     captureMode,
     frameLayout,
     retakePhotoId,
-    autoSmile,
     isSessionFull,
   } = useBoothStore();
   const [busy, setBusy] = useState(false);
@@ -59,18 +58,7 @@ export function ShootExperience() {
     }
   }, [busy, startSession, router]);
 
-  const onSmile = useCallback(() => {
-    if (phase === "idle" || phase === "review") {
-      void handleShoot();
-    }
-  }, [phase, handleShoot]);
-
-  const { faces } = useFaceAssist(
-    webcam.videoRef,
-    Boolean(webcam.ready),
-    autoSmile && (phase === "idle" || phase === "review") && !retakePhotoId,
-    onSmile,
-  );
+  const { faces } = useFaceAssist(webcam.videoRef, Boolean(webcam.ready));
 
   useEffect(() => {
     webcam.start();

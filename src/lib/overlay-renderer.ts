@@ -1,6 +1,7 @@
 import type { OverlayState } from "@/types/overlay";
 
-export interface OverlayTransform {
+/** Pixel-space geometry resolved from normalized overlay state. */
+export interface ResolvedOverlayTransform {
   centerX: number;
   centerY: number;
   width: number;
@@ -29,7 +30,7 @@ export function resolveOverlayTransform(
   viewportHeight: number,
   imageWidth: number,
   imageHeight: number,
-): OverlayTransform {
+): ResolvedOverlayTransform {
   const imageRatio =
     imageWidth > 0 && imageHeight > 0 ? imageHeight / imageWidth : 1;
   const width = viewportWidth * overlay.scale;
@@ -121,7 +122,7 @@ export function calculateObjectCoverCrop(
 function drawCanvasDebug(
   ctx: CanvasRenderingContext2D,
   overlay: OverlayState,
-  transform: OverlayTransform,
+  transform: ResolvedOverlayTransform,
 ): void {
   ctx.save();
   ctx.translate(transform.centerX, transform.centerY);

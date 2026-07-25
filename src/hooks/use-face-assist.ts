@@ -1,21 +1,16 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
-import { detectFaces, estimateSmileScore, isFaceDetectorSupported } from "@/lib/face";
+import { useCallback, useEffect, useState } from "react";
+import { detectFaces, isFaceDetectorSupported } from "@/lib/face";
 import type { FaceBox } from "@/types";
 
-/**
- * Poll FaceDetector for face boxes and optional smile auto-capture assist.
- */
+/** Poll FaceDetector for live face boxes when supported. */
 export function useFaceAssist(
   videoRef: React.RefObject<HTMLVideoElement | null>,
   enabled: boolean,
-  autoSmile: boolean,
-  onSmile?: () => void,
 ) {
   const [faces, setFaces] = useState<FaceBox[]>([]);
   const [supported, setSupported] = useState(false);
-  const smileLock = useRef(false);
 
   useEffect(() => {
     setSupported(isFaceDetectorSupported());
@@ -24,21 +19,8 @@ export function useFaceAssist(
   const tick = useCallback(async () => {
     const video = videoRef.current;
     if (!video || !enabled || !supported || video.readyState < 2) return;
-
-    const next = await detectFaces(video);
-    setFaces(next);
-
-    if (autoSmile && next[0] && onSmile && !smileLock.current) {
-      const score = await estimateSmileScore(video, next[0]);
-      if (score > 0.55) {
-        smileLock.current = true;
-        onSmile();
-        setTimeout(() => {
-          smileLock.current = false;
-        }, 4000);
-      }
-    }
-  }, [videoRef, enabled, supported, autoSmile, onSmile]);
+    setFaces(await detectFaces(video));
+  }, [videoRef, enabled, supported]);
 
   useEffect(() => {
     if (!enabled || !supported) {

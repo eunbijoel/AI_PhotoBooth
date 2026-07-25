@@ -17,8 +17,7 @@ interface CameraStageProps {
 }
 
 export function CameraStage({ webcam, faces, className }: CameraStageProps) {
-  const { filter, poseGuide, backgroundBlur, currentShot, phase, frameLayout, retakePhotoId } =
-    useBoothStore();
+  const { filter, poseGuide, currentShot, phase, frameLayout, retakePhotoId } = useBoothStore();
   const aspect = getCaptureAspect(frameLayout);
   const filterMeta = getFilter(filter);
 
@@ -41,16 +40,11 @@ export function CameraStage({ webcam, faces, className }: CameraStageProps) {
           ref={webcam.webcamRef}
           audio={false}
           mirrored={webcam.mirrored}
-          screenshotFormat="image/jpeg"
-          screenshotQuality={0.92}
           videoConstraints={VIDEO_CONSTRAINTS}
           onUserMedia={webcam.handleUserMedia}
           onUserMediaError={webcam.handleUserMediaError}
-          className={cn("h-full w-full object-cover", backgroundBlur && "scale-105")}
-          style={{
-            filter: `${getFilterCss(filter)}${backgroundBlur ? " blur(1.5px)" : ""}`,
-          }}
-          forceScreenshotSourceSize
+          className="h-full w-full object-cover"
+          style={{ filter: getFilterCss(filter) }}
           aria-label="라이브 웹캠 미리보기"
         />
       ) : (

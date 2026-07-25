@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Black_Han_Sans, Jua, Noto_Sans_KR, Noto_Serif_KR } from "next/font/google";
+import { Black_Han_Sans, Noto_Sans_KR } from "next/font/google";
 import { ThemeBoot } from "@/components/shared/theme-boot";
 import "./globals.css";
 
@@ -13,18 +13,6 @@ const display = Black_Han_Sans({
   variable: "--font-display",
   subsets: ["latin"],
   weight: "400",
-});
-
-const jua = Jua({
-  variable: "--font-jua",
-  subsets: ["latin"],
-  weight: "400",
-});
-
-const notoSerif = Noto_Serif_KR({
-  variable: "--font-serif",
-  subsets: ["latin"],
-  weight: ["400", "600", "700"],
 });
 
 export const metadata: Metadata = {
@@ -47,9 +35,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko" className="dark" suppressHydrationWarning>
-      <body
-        className={`${notoSans.variable} ${display.variable} ${jua.variable} ${notoSerif.variable} antialiased`}
-      >
+      <body className={`${notoSans.variable} ${display.variable} antialiased`}>
         <ThemeBoot />
         {children}
       </body>
