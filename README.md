@@ -1,3 +1,5 @@
+[한국어](README.md) | [English](README_EN.md)
+
 # 📸 나만의 AI 포토부스
 
 인터랙티브 PNG 오버레이를 결합한 브라우저 기반 셀프 포토부스입니다.
@@ -5,6 +7,9 @@
 
 > **개인정보:** 사진·영상·세션 데이터는 **서버로 업로드되지 않습니다.**  
 > 모든 처리와 임시 저장은 전부 **사용자 브라우저(클라이언트)의 Canvas, MediaRecorder, 메모리 및 localStorage 안에서만** 이뤄집니다.
+
+<img width="2048" height="1131" alt="image" src="https://github.com/user-attachments/assets/34c06ab9-b1af-42c7-ba44-38a1ce2e0400" />
+<img width="1422" height="751" alt="스크린샷 2026-07-19 오후 10 41 17" src="https://github.com/user-attachments/assets/283a0e9f-51c1-44aa-a08c-bfe3c0744095" />
 
 ## 실행
 
@@ -77,4 +82,3 @@ localStorage에는 브라우저 용량 제한이 있습니다. 큰 세션 영상
 | FaceDetector 보조 기능 | 지원 환경에서 활성화 | 미지원 시 자동 비활성화 |
 
 최신 Chrome 또는 Safari 사용을 권장합니다.
-
